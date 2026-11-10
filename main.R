@@ -285,10 +285,73 @@ print("SELECTED THRESHOLD")
 print(best_threshold)
 
 # ------------------------------------------------------------------------------
-# STEP 7: ROCR Performance Curve Analysis
-# ------------------------------------------------------------------------------
-ROCRpred <- prediction(res, testingbank.$y)
-ROCRpref <- performance(ROCRpred, "tpr", "fpr")
+# STEP 7: Final Test Evaluation
+
+test_prob <- predict(
+  model14,
+  testingbank.,
+  type = "response"
+)
+
+test_actual <- as.integer(
+  testingbank.$y
+)
+
+test_predicted <- as.integer(
+  test_prob >= selected_threshold
+)
+
+# Confusion Matrix
+
+cm <- table(
+  Actual = factor(test_actual, levels = c(0, 1)),
+  Predicted = factor(test_predicted, levels = c(0, 1))
+)
+
+print(cm)
+
+# Final test metrics
+
+test_metrics <- calculate_metrics(
+  test_actual,
+  test_prob,
+  selected_threshold
+)
+
+# ROC-AUC
+
+test_roc <- prediction(test_prob, test_actual)
+
+auc <- performance(
+  test_roc,
+  "auc"
+)@y.values[[1]]
+
+test_metrics$roc_auc <- as.numeric(auc)
+
+print("FINAL TEST PERFORMANCE")
+print(test_metrics)
+
+# Export results
+
+dir.create("results", showWarnings = FALSE)
+
+write.csv(
+  validation_results,
+  "results/validation_threshold_tradeoff.csv",
+  row.names = FALSE
+)
+
+write.csv(
+  test_metrics,
+  "results/test_metrics.csv",
+  row.names = FALSE
+)
+
+write.csv(
+  as.data.frame.matrix(cm),
+  "results/confusion_matrix.csv"
+)
 
 # Plot ROC Curve with Cutoff threshold annotations
 plot(ROCRpref, colorize = TRUE, print.cutoffs.at = seq(0.1, 0.9, by = 0.1))
