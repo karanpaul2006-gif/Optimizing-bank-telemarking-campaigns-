@@ -67,13 +67,41 @@ corrplot(cr, method = "circle")
 corrplot.mixed(cr)
 
 # ------------------------------------------------------------------------------
-# STEP 4: Train-Test Split (70:30)
-# ------------------------------------------------------------------------------
-set.seed(111)
-split <- sample.split(bank.$y, SplitRatio = 0.7)
-trainingbank. <- subset(bank., split == TRUE)
-testingbank.  <- subset(bank., split == FALSE)
+# STEP 4: Train, Validation and Test Split
 
+set.seed(111)
+
+# 60% training
+split_train <- sample.split(
+  bank.$y,
+  SplitRatio = 0.60
+)
+
+trainingbank. <- subset(
+  bank.,
+  split_train == TRUE
+)
+
+remainingbank. <- subset(
+  bank.,
+  split_train == FALSE
+)
+
+# Split remaining 40% equally
+split_validation <- sample.split(
+  remainingbank.$y,
+  SplitRatio = 0.50
+)
+
+validationbank. <- subset(
+  remainingbank.,
+  split_validation == TRUE
+)
+
+testingbank. <- subset(
+  remainingbank.,
+  split_validation == FALSE
+)
 # ------------------------------------------------------------------------------
 # STEP 5: Iterative Model Building & VIF Evaluation
 # ------------------------------------------------------------------------------
@@ -156,25 +184,105 @@ summary(model14)
 vif(model14)
 
 # ------------------------------------------------------------------------------
-# STEP 6: Predictions & Threshold Accuracy Evaluation
-# ------------------------------------------------------------------------------
-res <- predict(model14, testingbank., type = "response")
-head(res)
-head(testingbank.$y)
+# STEP 6: Threshold Optimization
 
-# Confusion Matrix for Cutoff = 0.75
-cm_75 <- table(Actual = testingbank.$y, Predicted = res > 0.75)
-print("Confusion Matrix (Cutoff = 0.75):")
-print(cm_75)
-acc_75 <- sum(diag(cm_75)) / sum(cm_75)
-cat("Accuracy (Cutoff 0.75):", round(acc_75 * 100, 2), "%\n")
+# Predict probabilities on validation dataset
 
-# Confusion Matrix for Cutoff = 0.60
-cm_60 <- table(Actual = testingbank.$y, Predicted = res > 0.60)
-print("Confusion Matrix (Cutoff = 0.60):")
-print(cm_60)
-acc_60 <- sum(diag(cm_60)) / sum(cm_60)
-cat("Accuracy (Cutoff 0.60):", round(acc_60 * 100, 2), "%\n")
+validation_prob <- predict(
+  model14,
+  validationbank.,
+  type = "response"
+)
+
+validation_actual <- as.integer(
+  validationbank.$y
+)
+
+# Function for evaluating classification performance
+
+calculate_metrics <- function(actual, probability, threshold) {
+
+  predicted <- as.integer(probability >= threshold)
+
+  TP <- sum(actual == 1 & predicted == 1)
+  TN <- sum(actual == 0 & predicted == 0)
+  FP <- sum(actual == 0 & predicted == 1)
+  FN <- sum(actual == 1 & predicted == 0)
+
+  precision <- if (TP + FP > 0) {
+    TP / (TP + FP)
+  } else {
+    0
+  }
+
+  recall <- if (TP + FN > 0) {
+    TP / (TP + FN)
+  } else {
+    0
+  }
+
+  specificity <- if (TN + FP > 0) {
+    TN / (TN + FP)
+  } else {
+    0
+  }
+
+  f1 <- if (precision + recall > 0) {
+    2 * precision * recall / (precision + recall)
+  } else {
+    0
+  }
+
+  data.frame(
+    threshold = threshold,
+    accuracy = (TP + TN) / length(actual),
+    precision = precision,
+    recall = recall,
+    specificity = specificity,
+    f1_score = f1,
+    contacts_selected_pct = mean(predicted == 1) * 100,
+    contacts_avoided_pct = (1 - mean(predicted == 1)) * 100,
+    deposits_captured_pct = recall * 100
+  )
+}
+
+# Evaluate multiple probability thresholds
+
+thresholds <- seq(0.01, 0.99, by = 0.01)
+
+validation_results <- do.call(
+  rbind,
+  lapply(thresholds, function(t) {
+    calculate_metrics(
+      validation_actual,
+      validation_prob,
+      t
+    )
+  })
+)
+
+# Select the threshold achieving at least 80% recall
+# while avoiding the maximum possible contacts.
+
+eligible <- subset(
+  validation_results,
+  recall >= 0.80
+)
+
+if (nrow(eligible) == 0) {
+
+  stop("No threshold achieved the required 80% validation recall.")
+
+}
+
+best_threshold <- eligible[
+  which.max(eligible$contacts_avoided_pct),
+]
+
+selected_threshold <- best_threshold$threshold
+
+print("SELECTED THRESHOLD")
+print(best_threshold)
 
 # ------------------------------------------------------------------------------
 # STEP 7: ROCR Performance Curve Analysis
