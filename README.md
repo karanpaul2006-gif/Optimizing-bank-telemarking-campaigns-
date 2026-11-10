@@ -25,7 +25,8 @@ Optimizing-bank-telemarketing-campaigns/
 │
 ├── README.md
 ├── main.R
-│
+│── bank-additional-full.csv
+|
 ├── data/
 │   └── README.md
 │
