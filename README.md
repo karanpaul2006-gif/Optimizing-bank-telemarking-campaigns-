@@ -18,24 +18,20 @@ The model is incrementally built from single baseline macroeconomic features up 
 1. Place `bank-additional-full.csv` in your working directory.
 2. Run `main.R` in RStudio, VS Code, or GitHub Web Editor.
 
+## Project Structure
+
+```text
 Optimizing-bank-telemarketing-campaigns/
+│
+├── README.md
+├── main.R
 │
 ├── data/
 │   └── README.md
-│       Dataset source and download instructions
 │
-├── results/
-│   ├── test_metrics.csv
-│   ├── confusion_matrix.csv
-│   ├── validation_threshold_tradeoff.csv
-│   ├── roc_curve.png
-│   └── model_coefficients.csv
-│
-├── main.R
-│
-├── README.md
-│
-└── LICENSE
-├── README.md
-│
-└── LICENSE
+└── results/
+    ├── test_metrics.csv
+    ├── confusion_matrix.csv
+    ├── validation_threshold_tradeoff.csv
+    ├── roc_curve.png
+    └── model_coefficients.csv
