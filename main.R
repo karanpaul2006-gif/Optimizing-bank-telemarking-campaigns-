@@ -354,4 +354,19 @@ write.csv(
 )
 
 # Plot ROC Curve with Cutoff threshold annotations
-plot(ROCRpref, colorize = TRUE, print.cutoffs.at = seq(0.1, 0.9, by = 0.1))
+# Plot ROC Curve with Cutoff Threshold Annotations
+
+roc_perf <- performance(
+  test_roc,
+  measure = "tpr",
+  x.measure = "fpr"
+)
+
+plot(
+  roc_perf,
+  colorize = TRUE,
+  print.cutoffs.at = seq(0.1, 0.9, by = 0.1),
+  main = "ROC Curve - Final Logistic Regression Model",
+  xlab = "False Positive Rate",
+  ylab = "True Positive Rate"
+)
