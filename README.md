@@ -1,306 +1,372 @@
-# Bank Telemarketing Campaign Analysis & Deposit Response Prediction
+# Bank Telemarketing Deposit Response Analysis
 
-**An R-based predictive analytics project using logistic regression to identify potential term-deposit subscribers and optimize telemarketing campaign targeting.**
+A predictive analytics project using R and Logistic Regression to analyse historical bank telemarketing campaigns, investigate customer subscription behaviour and evaluate classification models.
 
-![R](https://img.shields.io/badge/Language-R-blue)
-![Model](https://img.shields.io/badge/Model-Logistic%20Regression-orange)
-![Analytics](https://img.shields.io/badge/Analytics-Predictive%20Modelling-green)
-![Status](https://img.shields.io/badge/Status-Completed-success)
+<p align="left">
+  <img src="https://img.shields.io/badge/R-276DC3?style=for-the-badge&logo=r&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Logistic_Regression-6A5ACD?style=for-the-badge"/>
+  <img src="https://img.shields.io/badge/GLM-008080?style=for-the-badge"/>
+  <img src="https://img.shields.io/badge/Statistics-2E8B57?style=for-the-badge"/>
+  <img src="https://img.shields.io/badge/ROCR-FF8C00?style=for-the-badge"/>
+  <img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white"/>
+</p>
 
 ---
 
 ## 1. Project Overview
 
-Bank telemarketing campaigns involve contacting customers to encourage them to subscribe to financial products such as term deposits.
+Banks frequently conduct telemarketing campaigns to encourage customers to subscribe to term deposits.
 
-However, contacting every customer is resource-intensive. Identifying customers who are more likely to subscribe can help improve campaign efficiency and prioritize sales efforts.
+However, contacting every customer requires considerable campaign resources, while a large proportion of contacted customers may not subscribe.
 
-This project develops an iterative binary classification workflow using R and Logistic Regression to predict whether a customer will subscribe to a bank term deposit.
+The objective of this project is to analyse historical bank marketing data and develop logistic regression models to investigate factors associated with term deposit subscriptions.
 
-The analysis uses customer demographics, campaign information, previous campaign outcomes and economic indicators to build and evaluate predictive models.
+The project follows a structured analytical workflow involving data preparation, exploratory correlation analysis, progressive model development, multicollinearity assessment and classification evaluation.
 
-Beyond predicting subscription probability, the project explores probability-threshold optimization to identify a targeting strategy that maintains a minimum recall requirement while reducing unnecessary customer contacts.
+### Business Questions
 
-## 2. Business Problem
+- Which customer characteristics are associated with term deposit subscriptions?
+- How do economic indicators relate to subscription behaviour?
+- Does previous campaign success provide useful predictive information?
+- How do additional predictors influence logistic regression models?
+- How can multicollinearity be identified?
+- How does changing the classification threshold affect recall and unnecessary campaign contacts?
 
-A bank wants to improve the efficiency of its term-deposit telemarketing campaigns.
+---
 
-Not every contacted customer subscribes to the product, and contacting customers who are unlikely to respond can consume valuable campaign resources.
+## 2. Dataset Information
 
-The central business question is:
+**Dataset:** Bank Marketing (bank-additional-full)  
+**Source:** UCI Machine Learning Repository  
+**Total Observations:** 41,188  
+**Target Variable:** `y`  
+**Problem Type:** Binary Classification
 
-**Can historical customer and campaign information help identify potential term-deposit subscribers while reducing unnecessary telemarketing contacts?**
+The dataset contains information relating to a Portuguese bank's direct marketing campaigns.
 
-The project investigates:
+It includes customer demographics, banking-related information, campaign interaction details and macroeconomic indicators.
 
-- Which customer and campaign characteristics are associated with subscription outcomes?
-- How does progressively introducing predictors affect logistic regression models?
-- Does multicollinearity affect the selected model variables?
-- How effectively can the model distinguish between potential subscribers and non-subscribers?
-- What probability threshold provides at least 80% recall while minimizing the number of selected contacts?
+### Target Variable
 
-## 3. Dataset
-
-**Dataset:** `bank-additional-full.csv`
-
-The dataset contains historical bank direct-marketing campaign information.
-
-The target variable is:
-
-`y`
-
-| Target Value | Description |
+| Value | Meaning |
 |---|---|
-| yes | Customer subscribed to the term deposit |
-| no | Customer did not subscribe |
+| 0 | Customer did not subscribe |
+| 1 | Customer subscribed to a term deposit |
 
-The dataset contains several categories of predictors.
+### Dataset Source
 
-### Customer Information
+https://archive.ics.uci.edu/dataset/222/bank+marketing
 
-- Age
-- Job profile
-- Marital status
+---
+
+## 3. Data Preprocessing & Feature Engineering
+
+The dataset was prepared for logistic regression modelling through categorical encoding and feature transformation.
+
+### Preprocessing Operations
+
+- Converted the target variable into binary numerical values.
+- Encoded binary categorical variables.
+- Applied dummy encoding to selected categorical predictors.
+- Prepared demographic, campaign and economic variables for model development.
+- Examined correlations between numerical variables.
+
+### Categorical Variables
+
+The modelling workflow includes:
+
+- Job Profile
+- Marital Status
 - Education
-- Housing loan status
-- Personal loan status
-- Default status
+- Contact Type
+- Previous Campaign Outcome
+- Housing Loan
+- Personal Loan
+- Default Status
 
-### Campaign Information
+The `fastDummies` package was used for categorical encoding.
 
-- Contact type
-- Number of contacts during the current campaign
-- Days since previous contact
-- Previous campaign outcome
+---
 
-### Economic Indicators
+## 4. Exploratory Analysis & Correlation
 
-- Euro interbank offered rate
-- Consumer price index
-- Consumer confidence index
+Correlation analysis was performed to examine relationships between numerical variables.
 
-These variables provide information about customer characteristics, previous marketing interactions and broader economic conditions.
+The `corrplot` package was used to visualize correlations between predictors.
 
-## 4. Technology Stack
+This step helped examine relationships between economic indicators and other numerical features before developing the logistic regression models.
 
-| Technology | Application |
+---
+
+## 5. Progressive Logistic Regression Model Development
+
+A major component of this project is the progressive development of **14 Generalized Linear Models (GLMs)** using logistic regression.
+
+Instead of immediately developing one final model, additional predictors were introduced progressively.
+
+### Model Development Approach
+
+| Model | Additional Predictor |
 |---|---|
-| R | Statistical analysis and modelling |
-| Logistic Regression | Binary classification |
-| GLM | Iterative model development |
-| fastDummies | Categorical variable encoding |
-| caTools | Train-validation-test splitting |
-| car | Multicollinearity analysis using VIF |
-| corrplot | Correlation visualization |
-| ROCR | ROC curve and AUC evaluation |
+| Model 1 | Euribor 3-month rate |
+| Model 2 | Consumer Price Index |
+| Model 3 | Campaign contacts |
+| Model 4 | Previous campaign success |
+| Model 5 | Customer age |
+| Model 6 | Blue-collar job profile |
+| Model 7 | Consumer confidence index |
+| Model 8 | Days since previous contact (`pdays`) |
+| Model 9 | Housing loan |
+| Model 10 | Personal loan |
+| Model 11 | Retired job profile |
+| Model 12 | Student job profile |
+| Model 13 | University degree |
+| Model 14 | Cellular contact type |
 
-## 5. Analytical Workflow
+### Why Progressive Modelling?
 
-### Step 1: Data Import and Initial Exploration
+Progressively introducing predictors allows examination of:
 
-The dataset is imported into R using `read.csv()`.
+- Changes in regression coefficients.
+- Statistical significance of individual predictors.
+- Residual deviance.
+- Akaike Information Criterion (AIC).
+- Multicollinearity between explanatory variables.
 
-Initial descriptive summaries are generated using `summary()` to understand variable distributions and identify the structure of the dataset.
+This provides a structured approach to understanding how different customer and campaign characteristics contribute to the fitted models.
 
-### Step 2: Data Preprocessing and Encoding
+---
 
-The target variable is converted into binary format:
+## 6. Multicollinearity Analysis (VIF)
 
-- Yes = 1
-- No = 0
+Variance Inflation Factor (VIF) was used to examine multicollinearity among predictors.
 
-Binary categorical variables such as housing loans, personal loans and default status are also encoded.
+The `car` package was used for VIF calculations.
 
-Multi-category variables are transformed using one-hot encoding through the `fastDummies` package.
+### Final Displayed VIF Results
 
-The encoded dataset is then used for correlation analysis and model development.
+| Predictor | VIF |
+|---|---:|
+| Euribor 3-month rate | 1.773 |
+| Consumer Price Index | 1.882 |
+| Campaign | 1.022 |
+| Previous campaign outcome: success | 8.993 |
+| Age | 1.643 |
+| Blue-collar job profile | 1.170 |
+| Consumer confidence index | 1.278 |
+| `pdays` | 9.199 |
+| Housing loan | 1.009 |
+| Personal loan | 1.004 |
+| Retired job profile | 1.554 |
+| Student job profile | 1.153 |
+| University degree | 1.160 |
+| Cellular contact | 1.454 |
 
-### Step 3: Correlation Analysis
+### Key Observation
 
-A correlation matrix is generated using the numeric predictors.
+The highest displayed VIF values were:
 
-The `corrplot` package is used to visualize relationships between numerical variables.
+- `pdays`: 9.199
+- Previous campaign outcome (success): 8.993
 
-This provides an initial understanding of predictor relationships before model development.
+These variables show comparatively higher multicollinearity and warrant attention when interpreting the fitted regression coefficients.
 
-### Step 4: Train, Validation and Test Split
+---
 
-The dataset is divided into three subsets:
+## 7. Training, Validation & Testing Strategy
 
-| Dataset | Allocation | Purpose |
-|---|---:|---|
-| Training | 60% | Model development |
-| Validation | 20% | Threshold selection |
-| Testing | 20% | Final model evaluation |
+The dataset was divided into three subsets.
 
-The random split uses a fixed seed of 111 for reproducibility.
+| Dataset | Allocation |
+|---|---:|
+| Training | 60% |
+| Validation | 20% |
+| Testing | 20% |
 
-The validation dataset is used for probability-threshold optimization, while the test dataset is reserved for final evaluation.
+**Random Seed:** 111
 
-### Step 5: Iterative Logistic Regression Modelling
+### Training Set
 
-Fourteen progressively specified logistic regression models are developed using R's `glm()` function with a binomial family.
+Used to estimate logistic regression coefficients.
 
-The models begin with economic indicators and progressively introduce additional predictors.
+### Validation Set
 
-The modelling process explores:
+Used to explore different probability thresholds and evaluate classification performance.
 
-- Economic indicators.
-- Campaign contact frequency.
-- Previous campaign outcomes.
-- Customer age.
-- Job profile.
-- Customer confidence indicators.
-- Days since previous contact.
-- Housing and personal loan status.
-- Education.
-- Contact type.
+### Testing Set
 
-The purpose is to examine how progressively introducing predictors changes the model specification and its statistical characteristics.
+Reserved for final evaluation using predictions generated by the selected model and threshold.
 
-### Step 6: Multicollinearity Analysis
+---
 
-Variance Inflation Factor (VIF) is calculated using the `car` package.
+## 8. Probability Threshold Optimization
 
-VIF analysis is performed during iterative model development to examine potential multicollinearity among predictors.
+Logistic regression generates probabilities rather than directly assigning final Yes/No classifications.
 
-This helps identify predictors that may contain overlapping information.
+A probability threshold determines when a customer is classified as likely to subscribe.
 
-### Step 7: Probability Threshold Optimization
+Instead of automatically using the conventional 0.50 threshold, the project explores multiple probability cutoffs.
 
-A classification model produces probabilities rather than directly assigning final class labels.
+### Intended Optimization Objective
 
-The default 0.50 classification threshold is not necessarily optimal for every business problem.
+The intended objective is to:
 
-In this project, threshold selection is based on a business-oriented constraint:
+**Maintain at least 80% recall on validation data while minimizing unnecessary campaign contacts.**
 
-**Maintain at least 80% recall while maximizing the percentage of unnecessary contacts avoided.**
-
-The validation dataset is evaluated across probability thresholds ranging from 0.01 to 0.99 in increments of 0.01.
-
-The following metrics are calculated for each threshold:
+The threshold-selection workflow considers:
 
 - Accuracy
 - Precision
 - Recall
 - Specificity
 - F1 Score
-- Percentage of contacts selected
-- Percentage of contacts avoided
-- Percentage of actual subscribers captured
+- Number of predicted-positive customers
+- Percentage of campaign contacts avoided
 
-Only thresholds achieving at least 80% validation recall are considered eligible.
+The validation recall requirement is a threshold-selection objective, not a guarantee of achieving the same recall on the test dataset.
 
-Among these eligible thresholds, the threshold with the highest percentage of contacts avoided is selected.
+---
 
-This selected threshold is then applied to the holdout test dataset.
+## 9. Model Evaluation & Results
 
-### Step 8: Final Model Evaluation
+The model evaluation includes confusion matrices, classification metrics and an ROC curve.
 
-The final model is evaluated on the previously reserved test dataset.
+The supplied results contain two displayed confusion matrices.
 
-The evaluation includes:
+### Confusion Matrix A
 
-**Confusion Matrix**
+| Actual / Predicted | No | Yes |
+|---|---:|---:|
+| No | 10,939 | 25 |
+| Yes | 1,281 | 111 |
 
-Used to compare actual subscription outcomes against predicted classifications.
+**Classification Metrics**
 
-**Precision**
+| Metric | Result |
+|---|---:|
+| True Negatives | 10,939 |
+| False Positives | 25 |
+| False Negatives | 1,281 |
+| True Positives | 111 |
+| Accuracy (recalculated) | 89.43% |
+| Precision | 81.62% |
+| Recall | 7.97% |
+| Specificity | 99.77% |
 
-Measures the proportion of predicted subscribers who actually subscribed.
+*Note: The uploaded output reports 89.10% accuracy, but the displayed confusion-matrix values produce 89.43% when accuracy is recalculated.*
 
-**Recall**
+### Confusion Matrix B
 
-Measures the proportion of actual subscribers correctly identified.
+| Actual / Predicted | No | Yes |
+|---|---:|---:|
+| No | 10,889 | 75 |
+| Yes | 1,165 | 227 |
 
-**Specificity**
+**Classification Metrics**
 
-Measures the proportion of non-subscribers correctly classified.
+| Metric | Result |
+|---|---:|
+| True Negatives | 10,889 |
+| False Positives | 75 |
+| False Negatives | 1,165 |
+| True Positives | 227 |
+| Accuracy | 89.96% |
+| Precision | 75.17% |
+| Recall | 16.31% |
+| Specificity | 99.32% |
 
-**F1 Score**
+### Additional Accuracy Output
 
-Provides a combined measure of precision and recall.
+The supplied R output also prints an accuracy calculation of:
 
-**ROC-AUC**
+**89.83%**
 
-Evaluates the model's ability to distinguish between subscribers and non-subscribers across classification thresholds.
+However, this calculation uses TN = 10,873 and FP = 91, which do not match the second displayed confusion matrix.
 
-The ROCR package is used to calculate the ROC-AUC and generate the ROC curve.
+Therefore, the three displayed accuracy figures should not be treated as interchangeable results.
 
-## 6. Business Interpretation
+### ROC Curve
 
-The project focuses on improving campaign targeting rather than maximizing classification accuracy alone.
+An ROC curve was generated to visualize the relationship between:
 
-A bank may prefer a model that identifies a larger proportion of actual potential subscribers, even if it results in some additional unsuccessful contacts.
+- True Positive Rate
+- False Positive Rate
 
-The validation threshold-selection strategy therefore prioritizes maintaining at least 80% recall while reducing unnecessary contacts.
+The curve evaluates classification behaviour across different probability thresholds.
 
-This provides a more business-oriented approach to classification threshold selection.
+A numeric ROC-AUC value is not visible in the supplied output, so no specific ROC-AUC score is claimed.
 
-However, the selected threshold is based on a recall constraint rather than a complete financial cost-benefit model.
+### Results Interpretation
 
-Actual campaign profitability would additionally require information about:
+The displayed confusion matrices show:
 
-- Cost per customer contact.
-- Conversion value of a successful subscription.
-- Operational campaign expenses.
-- Customer acquisition costs.
+- High specificity across both classifications.
+- Relatively low recall.
+- Matrix A recall of approximately 7.97%.
+- Matrix B recall of approximately 16.31%.
 
-These factors are not directly quantified in the current analysis.
+Neither displayed confusion matrix demonstrates the intended validation recall target of at least 80%.
 
-## 7. Results and Evaluation
+The results highlight the importance of evaluating classification models using multiple metrics rather than relying exclusively on accuracy.
 
-The R script calculates and exports the final test-set performance metrics.
+### Detailed Results File
 
-The following measures are included:
+The complete transcribed model output, VIF values, confusion matrices and metric calculations are documented separately.
 
-| Metric | Purpose |
+**See:** [`MODEL_RESULTS.txt`](MODEL_RESULTS.txt)
+
+---
+
+## 10. Why Call Duration Is Not Used
+
+Call duration is only known after a telemarketing call has taken place.
+
+If the model is intended to help identify potential customers before contacting them, using call duration would introduce information that is unavailable at the time of the decision.
+
+Therefore, the project focuses on predictors that can be considered before the call rather than relying on call duration.
+
+---
+
+## 11. Technologies & Libraries
+
+<p align="left">
+  <img src="https://img.shields.io/badge/R-276DC3?style=flat-square&logo=r&logoColor=white"/>
+  <img src="https://img.shields.io/badge/fastDummies-6C757D?style=flat-square"/>
+  <img src="https://img.shields.io/badge/corrplot-6C757D?style=flat-square"/>
+  <img src="https://img.shields.io/badge/caTools-6C757D?style=flat-square"/>
+  <img src="https://img.shields.io/badge/car-6C757D?style=flat-square"/>
+  <img src="https://img.shields.io/badge/ROCR-FF8C00?style=flat-square"/>
+</p>
+
+| Category | Technologies |
 |---|---|
-| Accuracy | Overall classification correctness |
-| Precision | Reliability of predicted positive responses |
-| Recall | Percentage of actual subscribers identified |
-| Specificity | Correct identification of non-subscribers |
-| F1 Score | Balance between precision and recall |
-| ROC-AUC | Overall discrimination capability |
+| Programming Language | R |
+| Statistical Modelling | Generalized Linear Models |
+| Machine Learning | Logistic Regression |
+| Categorical Encoding | fastDummies |
+| Correlation Analysis | corrplot |
+| Data Splitting | caTools |
+| Multicollinearity Analysis | car |
+| Model Evaluation | ROCR |
 
-The final numerical values should be read from the generated `test_metrics.csv` file after executing the script.
+### Required R Libraries
 
-The selected probability threshold is determined using validation data and evaluated on the separate test dataset.
+```r
+install.packages(c(
+  "fastDummies",
+  "corrplot",
+  "caTools",
+  "car",
+  "ROCR"
+))
+```
 
-**Note:** Numerical model performance results are intentionally not hardcoded into this README. They should be updated from the latest successful execution of the R script.
+---
 
-## 8. Generated Outputs
-
-After executing the script, the following files are generated:
-
-### Root Directory
-
-`bank_cor.csv`
-
-Contains the correlation matrix of numerical variables.
-
-### Results Directory
-
-`results/validation_threshold_tradeoff.csv`
-
-Contains the performance metrics calculated across the evaluated validation thresholds.
-
-`results/test_metrics.csv`
-
-Contains the final test-set evaluation metrics, including ROC-AUC.
-
-`results/confusion_matrix.csv`
-
-Contains the final holdout confusion matrix.
-
-The ROC curve is displayed in the R plotting window during execution.
-
-It is not automatically exported as an image by the current script.
-
-## 9. Repository Structure
+## 12. Repository Structure
 
 ```text
-Optimizing-bank-telemarketing-campaigns/
+Optimizing-bank-telemarking-campaigns-/
 │
 ├── README.md
 │
@@ -308,90 +374,75 @@ Optimizing-bank-telemarketing-campaigns/
 │
 ├── bank-additional-full.csv
 │
-├── bank_cor.csv
-│
-└── results/
-    ├── validation_threshold_tradeoff.csv
-    ├── test_metrics.csv
-    └── confusion_matrix.csv
+└── MODEL_RESULTS.txt
 ```
 
-The generated CSV files appear after running the script. Only files actually committed to the repository should be listed in the published repository structure.
+---
 
-## 10. How to Run the Project
+## 13. Running the Project
 
-### Requirements
+### Prerequisites
 
 - R
-- RStudio or another R environment
+- RStudio or another R-compatible development environment.
 
-### Required Libraries
+### Step 1: Clone the Repository
 
-The script uses:
+```bash
+git clone https://github.com/karanpaul2006-gif/Optimizing-bank-telemarking-campaigns-.git
+```
+
+### Step 2: Install Required Packages
 
 ```r
-required_packages <- c(
+install.packages(c(
   "fastDummies",
   "corrplot",
   "caTools",
   "car",
   "ROCR"
-)
+))
 ```
 
-The script automatically checks for and installs missing packages.
+### Step 3: Execute the Analysis
 
-### Execution Instructions
-
-1. Clone or download the repository.
-2. Open the project directory in RStudio.
-3. Ensure `bank-additional-full.csv` is available in the working directory.
-4. Open `main.R`.
-5. Execute the complete script sequentially.
-6. Review the correlation plots and ROC curve.
-7. Inspect the generated CSV files in the `results` directory.
-
-## 11. Limitations
-
-The current project has several limitations:
-
-- Logistic regression is the only classification algorithm implemented.
-- The model has not been compared against alternative algorithms such as Random Forest or Gradient Boosting.
-- Cross-validation and hyperparameter tuning are not implemented.
-- Threshold optimization is based on a minimum recall requirement rather than a complete financial cost-benefit framework.
-- The model is not deployed as a production application.
-- Real-world campaign effectiveness has not been measured.
-- The analysis does not include live monitoring or model retraining.
-
-These limitations provide opportunities for future development.
-
-## 12. Future Improvements
-
-Potential extensions include:
-
-- Comparing Logistic Regression with Random Forest and XGBoost.
-- Implementing cross-validation.
-- Conducting feature selection and additional statistical diagnostics.
-- Evaluating model calibration.
-- Performing detailed error analysis.
-- Incorporating campaign costs into threshold optimization.
-- Developing an interactive prediction application using Shiny.
-- Exploring model explainability and variable importance.
-
-## 13. Skills Demonstrated
-
-**Programming:** R, data manipulation and statistical computing.
-
-**Statistics:** Logistic regression, correlation analysis and multicollinearity diagnostics.
-
-**Machine Learning:** Binary classification, probability prediction and classification threshold optimization.
-
-**Model Evaluation:** Confusion matrices, precision, recall, specificity, F1 Score and ROC-AUC.
-
-**Business Analytics:** Campaign-response analysis, customer targeting and decision-support modelling.
+1. Open `main.R`.
+2. Ensure `bank-additional-full.csv` is available in the working directory expected by the script.
+3. Execute the script sequentially.
+4. Review the model summaries, VIF calculations, threshold analysis and evaluation outputs.
 
 ---
 
-**Author:** Karan Paul Arora
+## 14. Project Limitations
 
-**GitHub:** https://github.com/karanpaul2006-gif
+- The analysis uses historical campaign information and does not establish causal relationships.
+- Logistic regression may not capture all nonlinear relationships or interactions.
+- Threshold optimization on validation data does not guarantee identical performance on unseen test data.
+- The analysis does not include a complete financial cost-benefit calculation for campaign contacts.
+- The model is an analytical prototype and has not been deployed in a production banking environment.
+- The supplied output contains inconsistencies between displayed confusion matrices and the separately printed accuracy calculation.
+- A clean, reproducible execution is required before claiming one definitive set of final model metrics.
+
+---
+
+## 15. Conclusion
+
+This project demonstrates a structured predictive analytics workflow using R and logistic regression.
+
+By progressively developing fourteen models, examining multicollinearity, encoding categorical variables and exploring probability thresholds, the project investigates how customer and campaign characteristics relate to term deposit subscription behaviour.
+
+The threshold exploration introduces a practical campaign-management perspective by considering the trade-off between identifying potential subscribers and reducing unnecessary customer contacts.
+
+The project demonstrates practical applications of statistical modelling, predictive analytics and classification evaluation in banking and marketing.
+
+---
+
+## Dataset Reference
+
+Moro, S., Cortez, P., & Rita, P. (2014).
+
+*A Data-Driven Approach to Predict the Success of Bank Telemarketing.*
+
+UCI Machine Learning Repository:
+
+https://archive.ics.uci.edu/dataset/222/bank+marketing
