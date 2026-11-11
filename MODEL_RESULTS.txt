@@ -1,0 +1,123 @@
+BANK TELEMARKETING DEPOSIT RESPONSE ANALYSIS MODEL OUTPUT SUMMARY
+=========================================
+
+Source
+
+This summary is based on the 21-page PDF of R console outputs supplied
+for this project. It transcribes visible results and performs arithmetic
+checks on the displayed confusion matrices. It does not invent missing
+metrics or combine outputs that do not reconcile.
+
+DATASET AND TARGET
+
+Dataset: Bank Marketing (bank-additional-full) Observations: 41,188
+Target: y (binary subscription outcome)
+
+MODELLING WORKFLOW
+
+-   Logistic regression using glm(…, family = binomial)
+-   14 progressively specified model formulations
+-   Categorical dummy encoding
+-   Correlation analysis
+-   VIF-based multicollinearity analysis
+-   60% training / 20% validation / 20% test split
+-   Random seed: 111
+-   Validation probability-threshold exploration
+-   Confusion-matrix and ROC-curve evaluation
+
+FINAL DISPLAYED VIF OUTPUT
+
+Predictor VIF Euribor 3-month rate 1.773452 Consumer price index
+1.881780 Campaign 1.021827 Previous campaign outcome: success 8.992997
+Age 1.643270 Blue-collar job profile 1.169841 Consumer confidence index
+1.278442 pdays 9.199192 Housing loan 1.009423 Personal loan 1.004363
+Retired job profile 1.554020 Student job profile 1.152617 University
+degree 1.160230 Cellular contact 1.453829
+
+The largest displayed VIF values are for pdays (9.199) and previous
+campaign success (8.993). These predictors merit attention when
+interpreting coefficients.
+
+DISPLAYED CONFUSION MATRIX A
+
+Rows = Actual class; columns = Predicted class.
+
+                 Predicted FALSE   Predicted TRUE
+
+Actual FALSE 10,939 25 Actual TRUE 1,281 111
+
+TN = 10,939 FP = 25 FN = 1,281 TP = 111 Total = 12,356
+
+Accuracy = (TN + TP) / Total = 89.10% Precision = TP / (TP + FP) =
+81.62% Recall = TP / (TP + FN) = 7.98% Specificity = TN / (TN + FP) =
+99.77%
+
+DISPLAYED CONFUSION MATRIX B
+
+Rows = Actual class; columns = Predicted class.
+
+                 Predicted FALSE   Predicted TRUE
+
+Actual FALSE 10,889 75 Actual TRUE 1,165 227
+
+TN = 10,889 FP = 75 FN = 1,165 TP = 227 Total = 12,356
+
+Accuracy = (TN + TP) / Total = 89.96% Precision = TP / (TP + FP) =
+75.17% Recall = TP / (TP + FN) = 16.31% Specificity = TN / (TN + FP) =
+99.32%
+
+ACCURACY LINE PRINTED IN THE PDF
+
+The PDF separately prints:
+
+(10873 + 227) / (10873 + 91 + 1165 + 227) = 11100 / 12356 = 89.83%
+
+This calculation uses TN = 10,873 and FP = 91, which do not match the
+second displayed confusion matrix (TN = 10,889 and FP = 75).
+
+The two matrices also represent different classifications. The supplied
+PDF does not label them clearly enough to establish which threshold or
+prediction object produced each matrix.
+
+ROC CURVE
+
+An ROC curve is present in the supplied PDF (final page). The graph
+shows the true-positive rate against the false-positive rate across
+probability thresholds.
+
+A numeric ROC-AUC value is not visible in the supplied output.
+Therefore, no ROC-AUC score is reported in this file.
+
+INTERPRETATION
+
+1.  Both displayed confusion matrices show high specificity but low
+    recall.
+2.  Matrix A has 7.98% recall.
+3.  Matrix B has 16.31% recall.
+4.  Neither displayed matrix demonstrates the intended validation recall
+    target of at least 80%.
+5.  The printed 89.83% accuracy does not reconcile with Matrix B.
+6.  The validation threshold objective must not be presented as achieved
+    until the validation output confirms it.
+7.  Validation performance and final test performance must be reported
+    separately.
+
+REQUIRED RE-RUN BEFORE CLAIMING FINAL PERFORMANCE
+
+Re-run the R script from a clean session and export the following from
+the same execution:
+
+-   The selected probability threshold on validation data.
+-   Validation confusion matrix and validation metrics.
+-   Test confusion matrix and test metrics.
+-   Test accuracy, precision, recall, specificity and F1 score.
+-   Numeric test ROC-AUC.
+-   The number/proportion of test customers predicted positive.
+
+Check that each confusion matrix total equals the number of test
+observations and that the printed accuracy equals (TN + TP) / total.
+
+Until those checks are complete, the matrices above should be treated as
+transcribed intermediate outputs, not as one verified final result set.
+
+END OF SUMMARY
